@@ -13,7 +13,8 @@ from typing import Optional
 import html
 import re
 
-from rag_engine import get_answer, llm  # نفترض أن llm متاح للقراءة
+from rag_engine import get_answer, llm, vectorstore
+from suggestions import get_suggestions, get_related_suggestions
 
 # إعداد السجلات
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Shams Telecom RAG Chatbot API",
     description="بوت ذكي للإجابة على أسئلة العملاء حول شركة الشمس تيليكوم",
-    version="1.1.0"
+    version="2.0.0"
 )
 
 # CORS
@@ -42,6 +43,17 @@ class QuestionRequest(BaseModel):
 
 class AnswerResponse(BaseModel):
     answer: str
+    success: bool = True
+    suggestions: Optional[list] = None
+
+
+class SuggestionsRequest(BaseModel):
+    question: Optional[str] = Field(None, description="السؤال الحالي (اختياري) لتوليد اقتراحات متعلقة")
+    num_suggestions: Optional[int] = Field(4, ge=1, le=10, description="عدد الاقتراحات المطلوبة")
+
+
+class SuggestionsResponse(BaseModel):
+    suggestions: list
     success: bool = True
 
 
@@ -75,14 +87,16 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-@app.post("/ask", response_model=AnswerResponse, summary="طرح سؤال والحصول على إجابة")
+@app.post("/ask", response_model=AnswerResponse, summary="طرح سؤال والحصول على إجابة مع اقتراحات")
 async def ask_question(request: QuestionRequest):
+    """
+    طرح سؤال والحصول على إجابة مع اقتراحات ذكية للأسئلة التالية
+    """
     try:
         clean_question = sanitize_question(request.question)
         
-        # تنفيذ get_answer مع حد زمني (اختياري: يمكنك تفعيله إذا لزم)
+        # تنفيذ get_answer
         try:
-            # يمكنك لاحقًا إضافة: asyncio.wait_for(get_answer(clean_question), timeout=10.0)
             answer = get_answer(clean_question)
         except Exception as e:
             logger.error(f"فشل في الحصول على إجابة: {e}")
@@ -91,7 +105,14 @@ async def ask_question(request: QuestionRequest):
                 detail="البوت لا يستطيع الرد حاليًا. يرجى المحاولة لاحقًا."
             )
         
-        return AnswerResponse(answer=answer, success=True)
+        # توليد اقتراحات ذكية
+        try:
+            suggestions = get_related_suggestions(clean_question, vectorstore, num_suggestions=4)
+        except Exception as e:
+            logger.warning(f"فشل في توليد الاقتراحات: {e}")
+            suggestions = get_suggestions(clean_question, num_suggestions=4)
+        
+        return AnswerResponse(answer=answer, success=True, suggestions=suggestions)
     
     except HTTPException:
         raise
@@ -100,6 +121,34 @@ async def ask_question(request: QuestionRequest):
         raise HTTPException(
             status_code=500, 
             detail="حدث خطأ غير متوقع. نعمل على إصلاحه."
+        )
+
+
+@app.post("/suggestions", response_model=SuggestionsResponse, summary="الحصول على اقتراحات للأسئلة")
+async def get_suggestions_endpoint(request: SuggestionsRequest):
+    """
+    الحصول على اقتراحات ذكية للأسئلة بناءً على السؤال الحالي (إن وُجد)
+    """
+    try:
+        if request.question:
+            clean_question = sanitize_question(request.question)
+            suggestions = get_related_suggestions(
+                clean_question, 
+                vectorstore, 
+                num_suggestions=request.num_suggestions
+            )
+        else:
+            suggestions = get_suggestions("", num_suggestions=request.num_suggestions)
+        
+        return SuggestionsResponse(suggestions=suggestions, success=True)
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("خطأ في /suggestions")
+        raise HTTPException(
+            status_code=500,
+            detail="حدث خطأ في توليد الاقتراحات."
         )
 
 
@@ -116,7 +165,7 @@ async def health_check():
         "service": "Shams Telecom RAG Chatbot",
         "model": model_name,
         "retriever": "chroma_db",
-        "version": "1.1.0",
+        "version": "2.0.0",
         "ready": True
     })
 
@@ -125,7 +174,17 @@ async def health_check():
 async def root():
     return {
         "message": "مرحبًا بك في واجهة برمجية بوت شركة الشمس تيليكوم",
-        "docs": "/docs",
-        "health": "/health",
-        "ask": "/ask"
+        "version": "2.0.0",
+        "features": [
+            "إجابات دقيقة باللغة العربية فقط",
+            "نظام اقتراحات ذكي",
+            "تحقق من صحة الإجابات",
+            "دعم كامل للغة العربية"
+        ],
+        "endpoints": {
+            "docs": "/docs",
+            "health": "/health",
+            "ask": "/ask",
+            "suggestions": "/suggestions"
+        }
     }
