@@ -1,15 +1,19 @@
 """
 api.py
-واجهة برمجية (API) لبوت شركة الشمس تيليكوم باستخدام FastAPI
+واجهة برمجية (API) محسّنة لبوت شركة الشمس تيليكوم باستخدام FastAPI
 """
 
 import logging
-from fastapi import FastAPI, HTTPException
+import asyncio
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional
+import html
+import re
 
-from rag_engine import get_answer
+from rag_engine import get_answer, llm  # نفترض أن llm متاح للقراءة
 
 # إعداد السجلات
 logging.basicConfig(level=logging.INFO)
@@ -19,10 +23,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Shams Telecom RAG Chatbot API",
     description="بوت ذكي للإجابة على أسئلة العملاء حول شركة الشمس تيليكوم",
-    version="1.0.0"
+    version="1.1.0"
 )
 
-# إعداد CORS للسماح بالوصول من أي مصدر
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,100 +36,93 @@ app.add_middleware(
 )
 
 
-# نماذج البيانات
 class QuestionRequest(BaseModel):
-    """نموذج طلب السؤال"""
     question: str = Field(..., min_length=3, description="السؤال الذي يريد المستخدم إجابته")
 
 
 class AnswerResponse(BaseModel):
-    """نموذج الاستجابة"""
-    answer: str = Field(..., description="إجابة البوت")
-    success: bool = Field(default=True, description="حالة نجاح العملية")
+    answer: str
+    success: bool = True
 
 
 def sanitize_question(question: str) -> str:
-    """
-    التحقق من صحة وتنقية السؤال
-    
-    Args:
-        question: السؤال المدخل
-        
-    Returns:
-        السؤال المنقى
-        
-    Raises:
-        HTTPException: إذا كان السؤال غير صحيح
-    """
+    """تنقية السؤال مع السماح بالرموز النصية العادية"""
     question = question.strip()
     
     if not question:
         raise HTTPException(status_code=400, detail="السؤال فارغ.")
-    
+        
     if len(question) < 3:
         raise HTTPException(status_code=400, detail="السؤال قصير جدًّا. يرجى كتابة سؤال واضح.")
     
-    # حماية من محاولات الحقن
-    dangerous_chars = ["<", ">", "{", "}", "script", "alert", "javascript:"]
-    if any(char in question.lower() for char in dangerous_chars):
+    # تنظيف HTML/JS (بدون رفض رموز نصية طبيعية)
+    question = html.escape(question)
+    # إزالة محاولات حقن بسيطة (بدون التأثير على الأسئلة الطبيعية)
+    if re.search(r'(javascript:|<script|onload=|onerror=)', question, re.IGNORECASE):
         raise HTTPException(status_code=400, detail="السؤال يحتوي على محتوى غير آمن.")
     
     return question
 
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """تسجيل وقت البدء/الانتهاء لكل طلب"""
+    logger.info(f"📥 وصول طلب: {request.method} {request.url.path}")
+    start_time = asyncio.get_event_loop().time()
+    response = await call_next(request)
+    process_time = asyncio.get_event_loop().time() - start_time
+    logger.info(f"📤 إرسال استجابة لـ {request.url.path} - الوقت: {process_time:.2f}s")
+    return response
+
+
 @app.post("/ask", response_model=AnswerResponse, summary="طرح سؤال والحصول على إجابة")
 async def ask_question(request: QuestionRequest):
-    """
-    نقطة النهاية الرئيسية لطرح الأسئلة والحصول على إجابات
-    
-    Args:
-        request: طلب يحتوي على السؤال
-        
-    Returns:
-        إجابة البوت مع حالة النجاح
-    """
     try:
-        logger.info(f"استلام سؤال: {request.question[:50]}...")
-        
-        # تنقية السؤال
         clean_question = sanitize_question(request.question)
         
-        # الحصول على الإجابة من البوت
-        answer = get_answer(clean_question)
+        # تنفيذ get_answer مع حد زمني (اختياري: يمكنك تفعيله إذا لزم)
+        try:
+            # يمكنك لاحقًا إضافة: asyncio.wait_for(get_answer(clean_question), timeout=10.0)
+            answer = get_answer(clean_question)
+        except Exception as e:
+            logger.error(f"فشل في الحصول على إجابة: {e}")
+            raise HTTPException(
+                status_code=500, 
+                detail="البوت لا يستطيع الرد حاليًا. يرجى المحاولة لاحقًا."
+            )
         
-        logger.info("تم إرجاع الإجابة بنجاح")
         return AnswerResponse(answer=answer, success=True)
     
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"خطأ أثناء معالجة السؤال '{request.question}': {str(e)}")
+        logger.exception("خطأ غير متوقع في /ask")
         raise HTTPException(
             status_code=500, 
-            detail="حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى."
+            detail="حدث خطأ غير متوقع. نعمل على إصلاحه."
         )
 
 
-@app.get("/health", summary="فحص حالة الخدمة")
+@app.get("/health")
 async def health_check():
-    """
-    نقطة نهاية للتحقق من حالة الخدمة
+    """فحص صحة الخدمة مع معلومات دقيقة عن النموذج"""
+    try:
+        model_name = getattr(llm, 'model', 'unknown')
+    except:
+        model_name = "llama3"  # أو اقرأ من متغير عالمي
     
-    Returns:
-        معلومات عن حالة الخدمة
-    """
-    return {
+    return JSONResponse({
         "status": "online",
         "service": "Shams Telecom RAG Chatbot",
-        "model": "mistral",
+        "model": model_name,
         "retriever": "chroma_db",
-        "version": "1.0.0"
-    }
+        "version": "1.1.0",
+        "ready": True
+    })
 
 
-@app.get("/", summary="الصفحة الرئيسية")
+@app.get("/")
 async def root():
-    """الصفحة الرئيسية للـ API"""
     return {
         "message": "مرحبًا بك في واجهة برمجية بوت شركة الشمس تيليكوم",
         "docs": "/docs",
