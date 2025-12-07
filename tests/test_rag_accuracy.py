@@ -197,7 +197,7 @@ TEST_QUESTIONS = [
 
 
 def check_answer_quality(answer: str, expected_keywords: list, must_not_contain: list = None) -> dict:
-    """فحص جودة الإجابة"""
+    """فحص جودة الإجابة مع دعم الأرقام مع أو بدون فواصل"""
     answer_lower = answer.lower()
     
     # فحص الكلمات المفتاحية المتوقعة
@@ -205,8 +205,30 @@ def check_answer_quality(answer: str, expected_keywords: list, must_not_contain:
     missing_keywords = []
     
     for keyword in expected_keywords:
-        if keyword.lower() in answer_lower:
+        keyword_lower = keyword.lower()
+        
+        # فحص مباشر
+        if keyword_lower in answer_lower:
             found_keywords.append(keyword)
+        # فحص الأرقام: إذا كان الكلمة المفتاحية رقم، جرب بدون فواصل
+        elif keyword_lower.replace(',', '').replace('،', '').isdigit():
+            # إذا كان رقم مع فواصل، جرب بدون فواصل
+            keyword_no_comma = keyword_lower.replace(',', '').replace('،', '')
+            answer_no_comma = answer_lower.replace(',', '').replace('،', '')
+            if keyword_no_comma in answer_no_comma:
+                found_keywords.append(keyword)
+            else:
+                missing_keywords.append(keyword)
+        # فحص الأرقام: إذا كان الكلمة المفتاحية رقم بدون فواصل، جرب مع فواصل
+        elif keyword_lower.isdigit() and len(keyword_lower) >= 4:
+            # جرب مع فواصل (مثل 65000 -> 65,000)
+            import re
+            # البحث عن الرقم مع أو بدون فواصل في الإجابة
+            pattern = keyword_lower[:2] + r'[,،]?' + keyword_lower[2:]
+            if re.search(pattern, answer_lower):
+                found_keywords.append(keyword)
+            else:
+                missing_keywords.append(keyword)
         else:
             missing_keywords.append(keyword)
     
