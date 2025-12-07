@@ -562,24 +562,14 @@ def expand_query(question: str, previous_question: str = None, previous_answer: 
         # توسيع محدد للمناطق الصحيحة فقط
         return f"{original} تغطية بغداد ديالى بابل المسيب الإسكندرية سدة الهندية فرع موقع"
     
-    # تواصل - تحسين للأسئلة عن الرقم والبريد
-    if any(w in q for w in ["تواصل", "اتصال", "هاتف", "بريد", "واتساب", "رقم", "6449", "خدمة العملاء", "البريد", "الإلكتروني"]):
-        return f"{original} تواصل هاتف 6449 بريد info@shams-tele.com واتساب خدمة العملاء"
-    
-    if any(w in q for w in ["دعم", "مساعده", "24", "فني"]):
+    if any(w in q for w in ["دعم", "مساعده", "24", "خدمة", "اتصال", "فني"]):
         return f"{original} دعم فني 24/7 خدمة العملاء تواصل هاتف 6449"
     
     if any(w in q for w in ["اسم", "شركة", "من نحن", "عن الشركة", "شمس", "تيليكوم"]):
         return f"{original} شركة شمس تيليكوم معلومات الشركة من نحن تأسيس"
     
-    # خدمات - تحسين
-    if any(w in q for w in ["خدمة", "خدمات", "ماذا", "ما هي", "تقدمون", "تقدم"]):
-        if "بلو سيركل" in q or "بلوسيركل" in q:
-            return f"{original} بلو سيركل حلول ألياف ضوئية شراكات"
-        elif "ألياف" in q or "فايبر" in q or "ftth" in q:
-            return f"{original} خدمات الإنترنت FTTH ألياف ضوئية كابل ضوئي"
-        else:
-            return f"{original} خدمات الإنترنت FTTH WiFi وايرلس مشاريع بلو سيركل"
+    if any(w in q for w in ["خدمة", "خدمات", "ماذا", "ما هي"]):
+        return f"{original} خدمات الإنترنت FTTH WiFi مشاريع بلو سيركل"
     
     if any(w in q for w in ["شركاء", "شريك", "أصدقاء"]):
         return f"{original} شركاء أصدقاء تبادل اسوار تازة المنصة"
