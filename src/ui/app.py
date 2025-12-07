@@ -39,7 +39,7 @@ def sanitize_input(message: str) -> tuple[bool, str]:
 
 
 def respond(message: str, chat_history: list) -> tuple[str, list, gr.update]:
-    """معالجة الرسالة مع توليد اقتراحات"""
+    """معالجة الرسالة مع توليد اقتراحات ودعم الأسئلة التتابعية"""
     try:
         if chat_history is None:
             chat_history = []
@@ -51,7 +51,39 @@ def respond(message: str, chat_history: list) -> tuple[str, list, gr.update]:
             suggestions = get_suggestions("", num_suggestions=4)
             return "", chat_history, gr.update(choices=suggestions, value=None)
 
-        bot_response = get_answer(result)
+        # استخراج السؤال السابق والإجابة السابقة لدعم الأسئلة التتابعية
+        previous_question = None
+        previous_answer = None
+        if len(chat_history) >= 2:
+            # آخر رسالتين (سؤال وإجابة)
+            prev_user_msg = chat_history[-2] if chat_history[-2].get("role") == "user" else None
+            prev_assistant_msg = chat_history[-1] if chat_history[-1].get("role") == "assistant" else None
+            
+            if prev_user_msg and prev_assistant_msg:
+                prev_q = prev_user_msg.get("content", "")
+                prev_a = prev_assistant_msg.get("content", "")
+                
+                # استخراج النص من dict/list/string
+                # Gradio قد يرسل dict مثل {'text': '...', 'type': 'text'}
+                if isinstance(prev_q, dict):
+                    previous_question = prev_q.get('text', prev_q.get('content', str(prev_q)))
+                elif isinstance(prev_q, list):
+                    previous_question = prev_q[0] if len(prev_q) > 0 else ""
+                elif isinstance(prev_q, str):
+                    previous_question = prev_q
+                else:
+                    previous_question = str(prev_q) if prev_q else None
+                
+                if isinstance(prev_a, dict):
+                    previous_answer = prev_a.get('text', prev_a.get('content', str(prev_a)))
+                elif isinstance(prev_a, list):
+                    previous_answer = prev_a[0] if len(prev_a) > 0 else ""
+                elif isinstance(prev_a, str):
+                    previous_answer = prev_a
+                else:
+                    previous_answer = str(prev_a) if prev_a else None
+
+        bot_response = get_answer(result, previous_question, previous_answer)
         chat_history.append({"role": "user", "content": message})
         chat_history.append({"role": "assistant", "content": bot_response})
 

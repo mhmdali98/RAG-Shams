@@ -36,12 +36,62 @@ loader = TextLoader(str(Settings.DATA_FILE), encoding="utf-8")
 documents = loader.load()
 print(f"✅ تم تحميل {len(documents)} مستند")
 
-# 2. إثراء المستند بـ metadata
-print("🏷️  جاري إثراء المستند بـ metadata...")
+# 2. إثراء المستند بـ metadata ذكي
+print("🏷️  جاري إثراء المستند بـ metadata ذكي...")
 full_text = documents[0].page_content
 
 sections = re.split(r"(?=\n===\s.+?\s===)", full_text)
 enhanced_docs = []
+
+# خريطة الأقسام للفلترة الذكية
+section_mapping = {
+    "ملخص تنفيذي": {"section": "ملخص", "category": "عام", "keywords": ["باقات", "أسعار", "دعم", "تواصل"]},
+    "معلومات الشركة": {"section": "معلومات الشركة", "category": "عام", "keywords": ["شركة", "تاريخ", "تأسيس"]},
+    "المهمة والقيم": {"section": "المهمة والقيم", "category": "عام", "keywords": ["مهمة", "قيم", "رؤية"]},
+    "الباقات - الكابل الضوئي": {"section": "باقات", "category": "باقات", "keywords": ["فايبر", "FTTH", "سعر", "باقة"]},
+    "الباقات - الوايرلس": {"section": "باقات", "category": "باقات", "keywords": ["وايرلس", "WiFi", "Star", "Sun", "Neptune"]},
+    "باقات خدمة": {"section": "عروض", "category": "عروض", "keywords": ["منصة", "ترفيه", "بث"]},
+    "الخدمات المقدمة": {"section": "خدمات", "category": "خدمات", "keywords": ["خدمة", "إنترنت", "FTTH", "WiFi"]},
+    "مناطق التغطية": {"section": "تغطية", "category": "معلومات", "keywords": ["تغطية", "بغداد", "ديالى", "بابل", "فرع"]},
+    "معلومات التواصل": {"section": "تواصل", "category": "معلومات", "keywords": ["هاتف", "بريد", "واتساب", "6449", "info@"]},
+    "لماذا تختار": {"section": "مزايا", "category": "عام", "keywords": ["دعم", "24", "أمن", "وصول"]},
+    "الدعم الفني": {"section": "دعم", "category": "خدمات", "keywords": ["دعم", "فني", "24", "مساعدة", "مشاكل"]},
+    "الأسئلة الشائعة": {"section": "FAQ", "category": "معلومات", "keywords": ["سؤال", "جواب", "شائع"]},
+    "طرق الدفع": {"section": "دفع", "category": "خدمات", "keywords": ["دفع", "تجديد", "باقة"]},
+    "تجديد الباقات": {"section": "تجديد", "category": "خدمات", "keywords": ["تجديد", "باقة", "دفع"]},
+}
+
+def detect_section_category(section_name: str, content: str) -> dict:
+    """اكتشاف فئة القسم والكلمات المفتاحية"""
+    content_lower = content.lower()
+    
+    # البحث في خريطة الأقسام
+    for key, info in section_mapping.items():
+        if key in section_name:
+            return info
+    
+    # اكتشاف تلقائي من المحتوى
+    category = "عام"
+    keywords = []
+    
+    if any(kw in content_lower for kw in ["باقة", "سعر", "دينار", "فايبر", "وايرلس"]):
+        category = "باقات"
+        keywords = ["باقة", "سعر", "باقات"]
+    elif any(kw in content_lower for kw in ["دعم", "فني", "24", "مساعدة"]):
+        category = "خدمات"
+        keywords = ["دعم", "فني"]
+    elif any(kw in content_lower for kw in ["تغطية", "بغداد", "ديالى", "بابل"]):
+        category = "معلومات"
+        keywords = ["تغطية", "منطقة"]
+    elif any(kw in content_lower for kw in ["هاتف", "بريد", "واتساب", "6449"]):
+        category = "معلومات"
+        keywords = ["تواصل", "هاتف"]
+    
+    return {
+        "section": section_name,
+        "category": category,
+        "keywords": keywords
+    }
 
 for section in sections:
     if not section.strip():
@@ -50,6 +100,20 @@ for section in sections:
     header_match = re.search(r"===\s*(.+?)\s*===", section)
     section_name = header_match.group(1).strip() if header_match else "عام"
 
+    # استخراج metadata من العلامات [القسم: ...]
+    metadata_tags = {}
+    tag_match = re.search(r'\[القسم:\s*(.+?)\]', section)
+    if tag_match:
+        metadata_tags["tag_section"] = tag_match.group(1).strip()
+    
+    type_match = re.search(r'\[النوع:\s*(.+?)\]', section)
+    if type_match:
+        metadata_tags["tag_type"] = type_match.group(1).strip()
+    
+    # اكتشاف فئة القسم
+    section_info = detect_section_category(section_name, section)
+    
+    # فلترة الأخبار الطويلة
     if "أخبار ومقالات" in section_name or "شاركنا في فعالية" in section:
         lines = section.split("\n")
         brief_section = "\n".join([lines[0], *[line for line in lines[1:4] if line.strip()]])
@@ -57,20 +121,37 @@ for section in sections:
     else:
         content = section
 
+    # إنشاء metadata شامل
+    metadata = {
+        "section": section_info["section"],
+        "category": section_info["category"],
+        "keywords": ", ".join(section_info["keywords"]) if section_info["keywords"] else "",
+        **metadata_tags
+    }
+
     enhanced_docs.append({
         "page_content": content.strip(),
-        "metadata": {"section": section_name}
+        "metadata": metadata
     })
 
-print(f"✅ تم تقسيم النص إلى {len(enhanced_docs)} قسم")
+print(f"✅ تم تقسيم النص إلى {len(enhanced_docs)} قسم مع metadata ذكي")
 
-# 3. تجزئة النص
+# 3. تجزئة النص - محسّنة للأسئلة العامة
 print("✂️  جاري تجزئة النص...")
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=300,
-    chunk_overlap=80,
-    separators=["\n\n=== ", "\n\n---\n\n", "\n\n", "\n", ". ", "، ", " ", ""],
+    chunk_size=1500,  # حجم أكبر ليشمل قسم الباقات كاملاً
+    chunk_overlap=100,
+    separators=[
+        "\n=== ",           # فصل الأقسام الرئيسية (الأولوية الأولى)
+        "\n---\n",          # فصل الأقسام الفرعية
+        "\n\n",             # فقرات
+        "\n",               # أسطر
+        ". ",               # جمل
+        "، ",               # فواصل عربية
+        " "                 # كلمات
+    ],
     length_function=len,
+    is_separator_regex=False
 )
 
 final_chunks = []
@@ -115,9 +196,10 @@ print(f"✅ تم حفظ قاعدة البيانات المتجهة في '{Settin
 
 # 7. اختبار الاسترجاع
 print("\n🧪 اختبار استرجاع المعلومات...")
+# استخدام retriever بدون threshold للاختبار (أكثر موثوقية)
 retriever = vectorstore.as_retriever(
-    search_type="similarity_score_threshold",
-    search_kwargs={"k": 4, "score_threshold": 0.25}
+    search_type="similarity",
+    search_kwargs={"k": 5}
 )
 
 test_queries = [

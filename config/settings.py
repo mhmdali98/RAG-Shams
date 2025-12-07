@@ -13,13 +13,13 @@ CHROMA_DB_DIR = STORAGE_DIR / "chroma_db"
 
 # إعدادات RAG
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
-LLM_MODEL = os.getenv("LLM_MODEL", "llama3")
-LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.01"))
-LLM_CONTEXT_SIZE = int(os.getenv("LLM_CONTEXT_SIZE", "4096"))
+LLM_MODEL = os.getenv("LLM_MODEL", "llama3")  # استخدام instruct model للدقة
+LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.0"))  # 0.0 لمنع الهلوسة
+LLM_CONTEXT_SIZE = int(os.getenv("LLM_CONTEXT_SIZE", "2048"))  # تقليل السياق لتحسين السرعة
 
 # إعدادات Retriever
 RETRIEVER_K = int(os.getenv("RETRIEVER_K", "10"))
-RETRIEVER_SCORE_THRESHOLD = float(os.getenv("RETRIEVER_SCORE_THRESHOLD", "0.2"))
+RETRIEVER_SCORE_THRESHOLD = float(os.getenv("RETRIEVER_SCORE_THRESHOLD", "0.1"))  # تقليل العتبة لتحسين الاسترجاع
 
 # إعدادات API
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
