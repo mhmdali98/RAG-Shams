@@ -14,6 +14,7 @@ sys.path.insert(0, str(BASE_DIR))
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_community.chat_models import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_core.output_parsers import StrOutputParser
@@ -57,10 +58,15 @@ try:
     )
     
     logger.info("جاري تهيئة النموذج اللغوي...")
-    llm = ChatOllama(
-        model=Settings.LLM_MODEL,
-        temperature=Settings.LLM_TEMPERATURE,
-        num_ctx=Settings.LLM_CONTEXT_SIZE
+    # llm = ChatOllama(
+    #     model=Settings.LLM_MODEL,
+    #     temperature=Settings.LLM_TEMPERATURE,
+    #     num_ctx=Settings.LLM_CONTEXT_SIZE
+    # )
+    llm = ChatGroq(
+        model="llama-3.1-8b-instant",
+        temperature=0.0,
+        api_key="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"  # من ملف الإعدادات
     )
     
     logger.info("✅ تم تهيئة النظام بنجاح")
