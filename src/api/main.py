@@ -1,7 +1,3 @@
-"""
-API main file
-واجهة برمجية (API) لبوت شركة الشمس تيليكوم باستخدام FastAPI
-"""
 
 import sys
 from pathlib import Path
