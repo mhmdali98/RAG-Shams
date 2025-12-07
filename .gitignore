@@ -38,3 +38,13 @@ Thumbs.db
 # Project specific
 chroma_db/
 *.pyc
+
+# Test results (keep only latest)
+tests/test_results_*.json
+!tests/test_results_latest.json
+
+# Scraped data (if not used)
+shams-website-extracted.txt
+
+# Backup files
+backup/

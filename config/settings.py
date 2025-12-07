@@ -13,7 +13,7 @@ CHROMA_DB_DIR = STORAGE_DIR / "chroma_db"
 
 # إعدادات RAG
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
-LLM_MODEL = os.getenv("LLM_MODEL", "llama3")  # استخدام instruct model للدقة
+LLM_MODEL = os.getenv("LLM_MODEL", "llama3:8b-instruct-q8_0")  # استخدام instruct model للدقة
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.0"))  # 0.0 لمنع الهلوسة
 LLM_CONTEXT_SIZE = int(os.getenv("LLM_CONTEXT_SIZE", "2048"))  # تقليل السياق لتحسين السرعة
 
