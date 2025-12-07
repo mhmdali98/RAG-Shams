@@ -1,0 +1,509 @@
+{
+  "timestamp": "2025-12-07T04:53:50.140478",
+  "total_questions": 30,
+  "correct_answers": 15,
+  "accuracy": 50.0,
+  "category_stats": {
+    "باقات": {
+      "total": 4,
+      "correct": 1,
+      "accuracy": 25.0
+    },
+    "أسعار": {
+      "total": 3,
+      "correct": 2,
+      "accuracy": 66.66666666666666
+    },
+    "باقات وايرلس": {
+      "total": 1,
+      "correct": 1,
+      "accuracy": 100.0
+    },
+    "باقات فايبر": {
+      "total": 1,
+      "correct": 1,
+      "accuracy": 100.0
+    },
+    "تغطية": {
+      "total": 4,
+      "correct": 3,
+      "accuracy": 75.0
+    },
+    "معلومات الشركة": {
+      "total": 3,
+      "correct": 2,
+      "accuracy": 66.66666666666666
+    },
+    "دعم": {
+      "total": 2,
+      "correct": 2,
+      "accuracy": 100.0
+    },
+    "تواصل": {
+      "total": 4,
+      "correct": 1,
+      "accuracy": 25.0
+    },
+    "خدمات": {
+      "total": 3,
+      "correct": 0,
+      "accuracy": 0.0
+    },
+    "دفع": {
+      "total": 2,
+      "correct": 1,
+      "accuracy": 50.0
+    },
+    "عام": {
+      "total": 1,
+      "correct": 1,
+      "accuracy": 100.0
+    },
+    "معلومات عامة": {
+      "total": 2,
+      "correct": 0,
+      "accuracy": 0.0
+    }
+  },
+  "results": [
+    {
+      "question": "ما هي جميع باقات الإنترنت المتوفرة؟",
+      "category": "باقات",
+      "answer": "باقة فايبر 35\nباقة فايبر 50\nباقة فايبر 75\nباقة Star",
+      "is_correct": false,
+      "keyword_score": 0.5,
+      "found_keywords": [
+        "فايبر 35",
+        "فايبر 50",
+        "فايبر 75",
+        "Star"
+      ],
+      "missing_keywords": [
+        "فايبر 150",
+        "Sun",
+        "Neptune",
+        "Galaxy Star"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما سعر باقة فايبر 75؟",
+      "category": "أسعار",
+      "answer": "65,000 دينار عراقي شهرياً.",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "65,000",
+        "65000",
+        "دينار"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما باقات الوايرلس؟",
+      "category": "باقات وايرلس",
+      "answer": "باقة Star، باقة Sun، باقة Neptune، باقة Galaxy Star.",
+      "is_correct": true,
+      "keyword_score": 0.8,
+      "found_keywords": [
+        "Star",
+        "Sun",
+        "Neptune",
+        "Galaxy Star"
+      ],
+      "missing_keywords": [
+        "وايرلس"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما باقات الفايبر؟",
+      "category": "باقات فايبر",
+      "answer": "باقة فايبر 35:\n- الاسم: فايبر 35\n- السعر: 35,000 دينار عراقي شهرياً\n- السرعة: حتى 35 Mbps للتحميل والرفع\n- النوع: كابل ضوئي (FTTH)\n- الاستخدام الموصى به: التصفح الأساسي، البريد الإلكتروني، مشاهدة الفيديو بدقة متوسطة (480p-720p)\n\nباقة فايبر 50:\n- الاسم: فايبر 50\n- السعر: 45,000 دينار عراقي شهرياً\n- السرعة: حتى 50 Mbps للتحميل والرفع\n- النوع: كابل ضوئي (FTTH)\n- الاستخدام الموصى به: مشاهدة المحتوى بجودة عالية (1080p)، تحميل الملفات بسرعة، العمل من المنزل\n\nباقة فايبر 75:\n- الاسم: فايبر 75\n- السعر: 6",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "فايبر 35",
+        "فايبر 50",
+        "فايبر 75",
+        "فايبر 150"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "كم سعر باقة Sun؟",
+      "category": "أسعار",
+      "answer": "40,000 دينار عراقي شهرياً.",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "40,000",
+        "40000",
+        "دينار"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما سعر باقة المنصة لثلاثة أشهر؟",
+      "category": "أسعار",
+      "answer": "45,000 دينار عراقي.",
+      "is_correct": false,
+      "keyword_score": 0.3333333333333333,
+      "found_keywords": [
+        "دينار"
+      ],
+      "missing_keywords": [
+        "25,000",
+        "25000"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما هي مناطق التغطية؟",
+      "category": "تغطية",
+      "answer": "المحافظات المغطاة:\n- بغداد: جميع الأحياء والمناطق\n- ديالى: جميع المناطق\n- بابل: بما في ذلك المسيب، الإسكندرية، سدة الهندية",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "بغداد",
+        "ديالى",
+        "بابل"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "هل لديكم فرع في ديالى؟",
+      "category": "تغطية",
+      "answer": "نعم، لدينا فرع في ديالى.",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "ديالى",
+        "فرع"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "أين تقع فروعكم؟",
+      "category": "تغطية",
+      "answer": "هاتف 6449، البريد info@shams-tele.com، الواتساب، الفروع.",
+      "is_correct": false,
+      "keyword_score": 0.0,
+      "found_keywords": [],
+      "missing_keywords": [
+        "بغداد",
+        "ديالى",
+        "بابل"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "هل تقدمون خدمات في بغداد؟",
+      "category": "تغطية",
+      "answer": "نعم، نقدم خدماتنا في بغداد.",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "بغداد"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما اسم الشركة؟",
+      "category": "معلومات الشركة",
+      "answer": "شركة شمس تيليكوم.",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "شمس",
+        "تيليكوم",
+        "شمس تيليكوم"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "من نحن؟",
+      "category": "معلومات الشركة",
+      "answer": "شركة شمس تيليكوم هي شركة عراقية رائدة في تكنولوجيا المعلومات والاتصالات.",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "شمس",
+        "تيليكوم",
+        "شركة"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "كم سنة من الخبرة لديكم؟",
+      "category": "معلومات الشركة",
+      "answer": "مازيدمن 15 عاماً.",
+      "is_correct": false,
+      "keyword_score": 0.0,
+      "found_keywords": [],
+      "missing_keywords": [
+        "10",
+        "عشرة",
+        "أكثر من 10"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "هل الدعم الفني متاح 24 ساعة؟",
+      "category": "دعم",
+      "answer": "متاحة على مدار الساعة 24/7.",
+      "is_correct": true,
+      "keyword_score": 0.75,
+      "found_keywords": [
+        "24",
+        "ساعة",
+        "متاح"
+      ],
+      "missing_keywords": [
+        "دعم"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما هو رقم خدمة العملاء؟",
+      "category": "تواصل",
+      "answer": "عذرًا، لا توجد معلومات كافية حول هذا الموضوع في قاعدة بياناتنا الحالية.\n\nيمكنك سؤالي عن:\n- باقات الإنترنت (فايبر، وايرلس، المنصة)\n- الأسعار\n- مناطق التغطية\n- الدعم الفني\n- طرق التواصل",
+      "is_correct": false,
+      "keyword_score": 0.0,
+      "found_keywords": [],
+      "missing_keywords": [
+        "6449"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "كيف أتواصل مع الدعم الفني؟",
+      "category": "دعم",
+      "answer": "الهاتف: 6449، الواتساب: متاح على مدار الساعة، البريد الإلكتروني: info@shams-tele.com.",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "6449",
+        "هاتف",
+        "واتساب"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما هو البريد الإلكتروني؟",
+      "category": "تواصل",
+      "answer": "عذرًا، لا توجد معلومات كافية حول هذا الموضوع في قاعدة بياناتنا الحالية.\n\nيمكنك سؤالي عن:\n- باقات الإنترنت (فايبر، وايرلس، المنصة)\n- الأسعار\n- مناطق التغطية\n- الدعم الفني\n- طرق التواصل",
+      "is_correct": false,
+      "keyword_score": 0.0,
+      "found_keywords": [],
+      "missing_keywords": [
+        "info@shams-tele.com",
+        "shams-tele.com"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "كيف أتواصل معكم؟",
+      "category": "تواصل",
+      "answer": "الهاتف: 6449، متاح على مدار الساعة 24/7. البريد الإلكتروني: info@shams-tele.com. الواتساب: https://api.whatsapp.com/send/?phone=9647856669616، متاح على مدار الساعة. الفروع: بغداد، شارع الصناعة، قرب فلكة الجامعة التكنولوجية؛ ديالى، فرع ديالى. وسائل التواصل الاجتماعي: LinkedIn، Facebook، Instagram، TikTok، YouTube.",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "6449",
+        "info@",
+        "واتساب"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما هو رقم الهاتف؟",
+      "category": "تواصل",
+      "answer": "عذرًا، لا توجد معلومات كافية حول هذا الموضوع في قاعدة بياناتنا الحالية.\n\nيمكنك سؤالي عن:\n- باقات الإنترنت (فايبر، وايرلس، المنصة)\n- الأسعار\n- مناطق التغطية\n- الدعم الفني\n- طرق التواصل",
+      "is_correct": false,
+      "keyword_score": 0.0,
+      "found_keywords": [],
+      "missing_keywords": [
+        "6449"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما هي الخدمات التي تقدمونها؟",
+      "category": "خدمات",
+      "answer": "طرق الدفع المتاحة:\n- الدفع النقدي في الفروع\n- الدفع عبر وكلائنا المعتمدين\n- التحويل البنكي (يمكن الاستفسار عن التفاصيل)\n\nمواعيد الدفع:\n- الدفع الشهري: قبل انتهاء الباقة\n- يمكن تجديد الباقة قبل انتهائها\n\nالخدمات الأخرى التي نقدمونها هي:\n\n* شركاؤنا وأصدقاؤنا: تبادل، اسوار، تازة، المنصة، كلوبل تيك، الوطني، تقدم العراق، هاله سات، تشغيل، ايرثلنك، سكايلاين، بلوسيركل، تاج المزرعة، تجارب، طماطة، قداح، دش نتورك، سنونو، كيكا نت، هالة الرافدين.",
+      "is_correct": false,
+      "keyword_score": 0.0,
+      "found_keywords": [],
+      "missing_keywords": [
+        "FTTH",
+        "وايرلس",
+        "WiFi",
+        "إنترنت"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "هل تقدمون إنترنت عبر الألياف الضوئية؟",
+      "category": "خدمات",
+      "answer": "نعم، نقدم الإنترنت عبر الكابل الضوئي (FTTH) من خلال باقات فايبر 35، فايبر 50، و فايبر 75.",
+      "is_correct": false,
+      "keyword_score": 0.5,
+      "found_keywords": [
+        "فايبر",
+        "FTTH"
+      ],
+      "missing_keywords": [
+        "ألياف",
+        "كابل ضوئي"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما هي خدمة بلو سيركل؟",
+      "category": "خدمات",
+      "answer": "خدمة بلو سيركل غير مدرجة في المعلومات المقدمة، فلا يوجد معلومات عنها.",
+      "is_correct": false,
+      "keyword_score": 0.3333333333333333,
+      "found_keywords": [
+        "بلو سيركل"
+      ],
+      "missing_keywords": [
+        "ألياف",
+        "حلول"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما سرعة باقة فايبر 150؟",
+      "category": "باقات",
+      "answer": "حتى 150 Mbps للتحميل والرفع.",
+      "is_correct": false,
+      "keyword_score": 0.6666666666666666,
+      "found_keywords": [
+        "150",
+        "Mbps"
+      ],
+      "missing_keywords": [
+        "ميجابت"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما هي باقة المنصة الترفيهية؟",
+      "category": "باقات",
+      "answer": "باقة فايبر 50.",
+      "is_correct": false,
+      "keyword_score": 0.0,
+      "found_keywords": [],
+      "missing_keywords": [
+        "منصة",
+        "ترفيه",
+        "بث",
+        "أفلام",
+        "مسلسلات"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما الفرق بين باقات الفايبر والوايرلس؟",
+      "category": "باقات",
+      "answer": "باقة فايبر هي خدمة اتصال كابل ضوئي (FTTH) تتيح لك اتصالاً سريعًا ودون انقطاع، بينما باقة وايرلس هي خدمة اتصال عبر موجات الراديو التي يمكن أن تكون أكثر عرضة للاستقطاب والانقطاع. باقات فايبر مناسبة للاستخدامات اليومية الأساسية مثل التصفح وبث المحتوى، في حين أن باقات وايرلس أكثر ملائمة للألعاب والتطبيقات الكبيرة التي تتطلب اتصالاً سريعًا ودون انقطاع.",
+      "is_correct": true,
+      "keyword_score": 0.75,
+      "found_keywords": [
+        "فايبر",
+        "وايرلس",
+        "FTTH"
+      ],
+      "missing_keywords": [
+        "WiFi"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "كيف يمكنني تجديد باقة الإنترنت؟",
+      "category": "دفع",
+      "answer": "يمكنك تجديد باقة الإنترنت عبر الموقع الإلكتروني لشركة الباقات أو من خلال زيارة مركز خدمة العملاء في أقرب فرع. يمكنك أيضاً الاتصال بنا على رقم الهاتف 1234567 أو عبر البريد الإلكتروني [support@baqat.com](mailto:support@baqat.com) للحصول على مزيد من المعلومات حول كيفية التجديد.",
+      "is_correct": false,
+      "keyword_score": 0.25,
+      "found_keywords": [
+        "تجديد"
+      ],
+      "missing_keywords": [
+        "وكلاء",
+        "6449",
+        "فروع"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما هي طرق الدفع المتاحة؟",
+      "category": "دفع",
+      "answer": "الدفع النقدي في الفروع، الدفع عبر وكلائنا المعتمدين، التحويل البنكي.",
+      "is_correct": true,
+      "keyword_score": 0.75,
+      "found_keywords": [
+        "نقد",
+        "بنكي",
+        "تحويل"
+      ],
+      "missing_keywords": [
+        "وكلاء"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "من هم شركاؤكم؟",
+      "category": "عام",
+      "answer": "تبادل، اسوار، تازة، المنصة، كلوبل تيك، الوطني، تقدم العراق، هاله سات، تشغيل، ايرثلنك، سكايلاين، بلوسيركل، تاج المزرعة، تجارب، طماطة، قداح، دش نتورك، سنونو، كيكا نت، هالة الرافدين.",
+      "is_correct": true,
+      "keyword_score": 1.0,
+      "found_keywords": [
+        "تبادل",
+        "اسوار",
+        "تازة",
+        "المنصة"
+      ],
+      "missing_keywords": [],
+      "forbidden_found": []
+    },
+    {
+      "question": "كم خط كابل ضوئي تديرون؟",
+      "category": "معلومات عامة",
+      "answer": "لا ندير أي خط كابل ضوئي. हम نقدم باقات فايبر للاستخدام المنزلي والشركات.",
+      "is_correct": false,
+      "keyword_score": 0.0,
+      "found_keywords": [],
+      "missing_keywords": [
+        "70,000",
+        "70000",
+        "سبعين ألف"
+      ],
+      "forbidden_found": []
+    },
+    {
+      "question": "ما هو المشروع الوطني للإنترنت؟",
+      "category": "معلومات عامة",
+      "answer": "تقدّم منصة تقدم العراق.",
+      "is_correct": false,
+      "keyword_score": 0.0,
+      "found_keywords": [],
+      "missing_keywords": [
+        "مشروع وطني",
+        "بنية تحتية",
+        "كابلات"
+      ],
+      "forbidden_found": []
+    }
+  ]
+}
