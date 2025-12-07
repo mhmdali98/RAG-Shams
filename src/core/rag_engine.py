@@ -4,11 +4,12 @@ rag_engine.py
 حول شركة الشمس تيليكوم بناءً على البيانات المحفوظة في قاعدة البيانات المتجهة.
 """
 
+
 import logging
+import re
 import sys
 from pathlib import Path
 
-# إضافة مسار المشروع إلى Python path
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
@@ -21,7 +22,6 @@ from langchain_core.output_parsers import StrOutputParser
 
 from config import Settings
 
-# إعداد السجلات
 logging.basicConfig(level=getattr(logging, Settings.LOG_LEVEL))
 logger = logging.getLogger(__name__)
 
@@ -40,32 +40,19 @@ try:
         embedding_function=embeddings
     )
     
-    # Retriever محسّن - بدون threshold للأسئلة المحددة (أكثر موثوقية)
+    # Retriever للأسئلة المحددة
     retriever = vectorstore.as_retriever(
         search_type="similarity",
-        search_kwargs={
-            "k": 5  # عدد معقول للأسئلة المحددة
-        }
-    )
-    
-    # Retriever مع threshold (للتحكم في الجودة)
-    threshold_retriever = vectorstore.as_retriever(
-        search_type="similarity_score_threshold",
-        search_kwargs={
-            "k": Settings.RETRIEVER_K,
-            "score_threshold": Settings.RETRIEVER_SCORE_THRESHOLD
-        }
+        search_kwargs={"k": 5}
     )
     
     # Retriever للأسئلة العامة (يستخدم k أكبر)
     general_retriever = vectorstore.as_retriever(
         search_type="similarity",
-        search_kwargs={
-            "k": 12  # عدد أكبر للأسئلة العامة
-        }
+        search_kwargs={"k": 12}
     )
     
-    # Retriever احتياطي (بدون threshold)
+    # Retriever احتياطي
     fallback_retriever = vectorstore.as_retriever(
         search_type="similarity",
         search_kwargs={"k": 8}
@@ -89,14 +76,13 @@ def smart_retriever(question: str, is_general: bool = False):
     """Retriever ذكي يفلتر النتائج حسب نوع السؤال مع تمييز دقيق بين أنواع الباقات"""
     question_lower = question.lower()
     
-    # اكتشاف نوع السؤال وتحديد القسم المناسب
     filter_metadata = None
     
     # تمييز دقيق بين باقات الفايبر والوايرلس
     is_about_fiber = any(w in question_lower for w in ["فايبر", "ftth", "كابل ضوئي", "ألياف", "fiber"])
     is_about_wireless = any(w in question_lower for w in ["وايرلس", "wireless", "wifi", "star", "sun", "neptune", "galaxy"])
     
-    # دعم فني - استخدام section فقط (ChromaDB يدعم حقل واحد فقط)
+    # دعم فني
     if any(w in question_lower for w in ["دعم", "فني", "24", "مساعدة", "مشكلة", "عطل"]):
         filter_metadata = {"section": "دعم"}
         logger.info("🎯 فلترة: قسم الدعم")
@@ -142,10 +128,8 @@ def smart_retriever(question: str, is_general: bool = False):
         filter_metadata = {"section": "دفع"}
         logger.info("🎯 فلترة: قسم الدفع")
     
-    # إذا كان هناك فلترة، استخدم retriever مع فلترة
     if filter_metadata:
         try:
-            # محاولة استخدام فلترة Chroma (حقل واحد فقط)
             filtered_retriever = vectorstore.as_retriever(
                 search_type="similarity",
                 search_kwargs={
@@ -156,11 +140,9 @@ def smart_retriever(question: str, is_general: bool = False):
             logger.info(f"✅ تم إنشاء retriever مع فلترة: {filter_metadata}")
             return filtered_retriever
         except Exception as e:
-            logger.warning(f"⚠️ فشل استخدام فلترة Chroma: {e}. استخدام retriever عادي.")
-            # إذا فشلت الفلترة (مثل package_type غير موجود)، جرب section
+            logger.warning(f"⚠️ فشل استخدام فلترة Chroma: {e}")
             if "package_type" in filter_metadata:
                 try:
-                    # جرب section بدلاً من package_type
                     fallback_filter = {"section": "باقات"}
                     filtered_retriever = vectorstore.as_retriever(
                         search_type="similarity",
@@ -173,17 +155,9 @@ def smart_retriever(question: str, is_general: bool = False):
                     return filtered_retriever
                 except:
                     pass
-            # إذا فشلت الفلترة، استخدم retriever عادي
-            if is_general:
-                return general_retriever
-            else:
-                return retriever
+            return general_retriever if is_general else retriever
     
-    # إذا لم يكن هناك فلترة محددة، استخدم retriever عادي
-    if is_general:
-        return general_retriever
-    else:
-        return retriever
+    return general_retriever if is_general else retriever
 
 def get_prompt(question: str, previous_question: str = None, previous_answer: str = None) -> ChatPromptTemplate:
     """إرجاع prompt مخصص حسب نوع السؤال مع دعم الأسئلة التتابعية"""
@@ -674,7 +648,6 @@ def validate_answer(answer: str, context: str) -> tuple[bool, str]:
         return False, "إجابة تخلط بين باقات الفايبر والوايرلس"
     
     # === فحص الأسعار المشبوهة ===
-    import re
     prices_in_answer = re.findall(r'(\d{1,3}(?:,\d{3})*)\s*دينار', answer)
     prices_in_context = re.findall(r'(\d{1,3}(?:,\d{3})*)\s*دينار', context)
     
@@ -891,8 +864,6 @@ def get_answer(question: str, previous_question: str = None, previous_answer: st
         
         if not response:
             response = "عذرًا، لا توجد معلومات كافية حول هذا الموضوع في قاعدة بياناتنا الحالية.\n\nهل تريد معرفة معلومات عن باقاتنا أو خدماتنا؟ 😊"
-        
-        import re
         
         # تنظيف الإجابة من العلامات غير المرغوبة
         response = re.sub(r'^(Answer|Response|Reply):\s*', '', response, flags=re.IGNORECASE)
