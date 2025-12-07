@@ -43,26 +43,26 @@ full_text = documents[0].page_content
 sections = re.split(r"(?=\n===\s.+?\s===)", full_text)
 enhanced_docs = []
 
-# خريطة الأقسام للفلترة الذكية
+# خريطة الأقسام للفلترة الذكية مع تمييز دقيق بين أنواع الباقات
 section_mapping = {
-    "ملخص تنفيذي": {"section": "ملخص", "category": "عام", "keywords": ["باقات", "أسعار", "دعم", "تواصل"]},
-    "معلومات الشركة": {"section": "معلومات الشركة", "category": "عام", "keywords": ["شركة", "تاريخ", "تأسيس"]},
-    "المهمة والقيم": {"section": "المهمة والقيم", "category": "عام", "keywords": ["مهمة", "قيم", "رؤية"]},
-    "الباقات - الكابل الضوئي": {"section": "باقات", "category": "باقات", "keywords": ["فايبر", "FTTH", "سعر", "باقة"]},
-    "الباقات - الوايرلس": {"section": "باقات", "category": "باقات", "keywords": ["وايرلس", "WiFi", "Star", "Sun", "Neptune"]},
-    "باقات خدمة": {"section": "عروض", "category": "عروض", "keywords": ["منصة", "ترفيه", "بث"]},
-    "الخدمات المقدمة": {"section": "خدمات", "category": "خدمات", "keywords": ["خدمة", "إنترنت", "FTTH", "WiFi"]},
-    "مناطق التغطية": {"section": "تغطية", "category": "معلومات", "keywords": ["تغطية", "بغداد", "ديالى", "بابل", "فرع"]},
-    "معلومات التواصل": {"section": "تواصل", "category": "معلومات", "keywords": ["هاتف", "بريد", "واتساب", "6449", "info@"]},
-    "لماذا تختار": {"section": "مزايا", "category": "عام", "keywords": ["دعم", "24", "أمن", "وصول"]},
-    "الدعم الفني": {"section": "دعم", "category": "خدمات", "keywords": ["دعم", "فني", "24", "مساعدة", "مشاكل"]},
-    "الأسئلة الشائعة": {"section": "FAQ", "category": "معلومات", "keywords": ["سؤال", "جواب", "شائع"]},
-    "طرق الدفع": {"section": "دفع", "category": "خدمات", "keywords": ["دفع", "تجديد", "باقة"]},
-    "تجديد الباقات": {"section": "تجديد", "category": "خدمات", "keywords": ["تجديد", "باقة", "دفع"]},
+    "ملخص تنفيذي": {"section": "ملخص", "category": "عام", "package_type": None, "keywords": ["باقات", "أسعار", "دعم", "تواصل"]},
+    "معلومات الشركة": {"section": "معلومات الشركة", "category": "عام", "package_type": None, "keywords": ["شركة", "تاريخ", "تأسيس", "شمس", "تيليكوم"]},
+    "المهمة والقيم": {"section": "المهمة والقيم", "category": "عام", "package_type": None, "keywords": ["مهمة", "قيم", "رؤية"]},
+    "الباقات - الكابل الضوئي": {"section": "باقات", "category": "باقات", "package_type": "fiber", "keywords": ["فايبر", "FTTH", "كابل ضوئي", "ألياف", "سعر", "باقة", "35", "50", "75", "150"]},
+    "الباقات - الوايرلس": {"section": "باقات", "category": "باقات", "package_type": "wireless", "keywords": ["وايرلس", "WiFi", "wireless", "Star", "Sun", "Neptune", "Galaxy"]},
+    "باقات خدمة": {"section": "عروض", "category": "عروض", "package_type": None, "keywords": ["منصة", "ترفيه", "بث"]},
+    "الخدمات المقدمة": {"section": "خدمات", "category": "خدمات", "package_type": None, "keywords": ["خدمة", "إنترنت", "FTTH", "WiFi"]},
+    "مناطق التغطية": {"section": "تغطية", "category": "معلومات", "package_type": None, "keywords": ["تغطية", "بغداد", "ديالى", "بابل", "المسيب", "الإسكندرية", "سدة الهندية", "فرع"]},
+    "معلومات التواصل": {"section": "تواصل", "category": "معلومات", "package_type": None, "keywords": ["هاتف", "بريد", "واتساب", "6449", "info@"]},
+    "لماذا تختار": {"section": "مزايا", "category": "عام", "package_type": None, "keywords": ["دعم", "24", "أمن", "وصول"]},
+    "الدعم الفني": {"section": "دعم", "category": "خدمات", "package_type": None, "keywords": ["دعم", "فني", "24", "مساعدة", "مشاكل"]},
+    "الأسئلة الشائعة": {"section": "FAQ", "category": "معلومات", "package_type": None, "keywords": ["سؤال", "جواب", "شائع"]},
+    "طرق الدفع": {"section": "دفع", "category": "خدمات", "package_type": None, "keywords": ["دفع", "تجديد", "باقة"]},
+    "تجديد الباقات": {"section": "تجديد", "category": "خدمات", "package_type": None, "keywords": ["تجديد", "باقة", "دفع"]},
 }
 
 def detect_section_category(section_name: str, content: str) -> dict:
-    """اكتشاف فئة القسم والكلمات المفتاحية"""
+    """اكتشاف فئة القسم والكلمات المفتاحية مع تمييز دقيق بين أنواع الباقات"""
     content_lower = content.lower()
     
     # البحث في خريطة الأقسام
@@ -72,9 +72,19 @@ def detect_section_category(section_name: str, content: str) -> dict:
     
     # اكتشاف تلقائي من المحتوى
     category = "عام"
+    package_type = None
     keywords = []
     
-    if any(kw in content_lower for kw in ["باقة", "سعر", "دينار", "فايبر", "وايرلس"]):
+    # تمييز دقيق بين باقات الفايبر والوايرلس
+    if any(kw in content_lower for kw in ["فايبر", "ftth", "كابل ضوئي", "ألياف"]):
+        category = "باقات"
+        package_type = "fiber"
+        keywords = ["فايبر", "FTTH", "كابل ضوئي", "35", "50", "75", "150"]
+    elif any(kw in content_lower for kw in ["وايرلس", "wireless", "wifi", "star", "sun", "neptune", "galaxy"]):
+        category = "باقات"
+        package_type = "wireless"
+        keywords = ["وايرلس", "WiFi", "wireless", "Star", "Sun", "Neptune", "Galaxy"]
+    elif any(kw in content_lower for kw in ["باقة", "سعر", "دينار"]):
         category = "باقات"
         keywords = ["باقة", "سعر", "باقات"]
     elif any(kw in content_lower for kw in ["دعم", "فني", "24", "مساعدة"]):
@@ -82,14 +92,18 @@ def detect_section_category(section_name: str, content: str) -> dict:
         keywords = ["دعم", "فني"]
     elif any(kw in content_lower for kw in ["تغطية", "بغداد", "ديالى", "بابل"]):
         category = "معلومات"
-        keywords = ["تغطية", "منطقة"]
+        keywords = ["تغطية", "منطقة", "بغداد", "ديالى", "بابل"]
     elif any(kw in content_lower for kw in ["هاتف", "بريد", "واتساب", "6449"]):
         category = "معلومات"
         keywords = ["تواصل", "هاتف"]
+    elif any(kw in content_lower for kw in ["شركة", "شمس", "تيليكوم", "من نحن"]):
+        category = "عام"
+        keywords = ["شركة", "شمس", "تيليكوم"]
     
     return {
         "section": section_name,
         "category": category,
+        "package_type": package_type,
         "keywords": keywords
     }
 
@@ -121,13 +135,17 @@ for section in sections:
     else:
         content = section
 
-    # إنشاء metadata شامل
+    # إنشاء metadata شامل مع تمييز دقيق بين أنواع الباقات
     metadata = {
         "section": section_info["section"],
         "category": section_info["category"],
         "keywords": ", ".join(section_info["keywords"]) if section_info["keywords"] else "",
         **metadata_tags
     }
+    
+    # إضافة package_type إذا كان موجوداً (للتمييز بين الفايبر والوايرلس)
+    if "package_type" in section_info and section_info["package_type"]:
+        metadata["package_type"] = section_info["package_type"]
 
     enhanced_docs.append({
         "page_content": content.strip(),
