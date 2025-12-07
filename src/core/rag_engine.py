@@ -46,10 +46,10 @@ try:
         search_kwargs={"k": 5}
     )
     
-    # Retriever للأسئلة العامة (يستخدم k أكبر)
+    # Retriever للأسئلة العامة (يستخدم k أكبر لجمع جميع المعلومات)
     general_retriever = vectorstore.as_retriever(
         search_type="similarity",
-        search_kwargs={"k": 12}
+        search_kwargs={"k": 20}  # زيادة من 12 إلى 20 للأسئلة العامة
     )
     
     # Retriever احتياطي
@@ -133,7 +133,7 @@ def smart_retriever(question: str, is_general: bool = False):
             filtered_retriever = vectorstore.as_retriever(
                 search_type="similarity",
                 search_kwargs={
-                    "k": 12 if is_general else 5,
+                    "k": 20 if is_general else 5,  # زيادة k للأسئلة العامة
                     "filter": filter_metadata
                 }
             )
@@ -221,12 +221,16 @@ def get_prompt(question: str, previous_question: str = None, previous_answer: st
      * عند السؤال عن "باقات الفايبر" أو "باقات FTTH": اذكر فقط فايبر 35، فايبر 50، فايبر 75، فايبر 150
      * عند السؤال عن "باقات الوايرلس" أو "باقات WiFi": اذكر فقط Star، Sun، Neptune، Galaxy Star
      * **ممنوع تماماً** ذكر باقات فايبر عند السؤال عن وايرلس والعكس
+   - **عند السؤال عن "جميع الباقات" أو "ما هي الباقات" أو "ما هي جميع باقات الإنترنت":**
+     * **يجب ذكر كل باقة موجودة في النص بدون استثناء:**
+       - باقات الفايبر (FTTH): فايبر 35، فايبر 50، فايبر 75، فايبر 150
+       - باقات الوايرلس (WiFi): Star، Sun، Neptune، Galaxy Star
+     * ابحث في **جميع أقسام النص** عن الباقات
+     * لا تتجاهل أي باقة حتى لو كانت في فقرة مختلفة
+     * اذكر كل باقة مع اسمها وسعرها الدقيق
    - **اجمع كل الباقات** من جميع الأقسام في النص
-   - اذكر **كل باقة موجودة** مع اسمها وسعرها الدقيق:
-     * باقات الفايبر (FTTH): فايبر 35، فايبر 50، فايبر 75، فايبر 150
-     * باقات الوايرلس (WiFi): Star، Sun، Neptune، Galaxy Star
-     * عروض المنصة الترفيهية: شهر واحد، ثلاثة أشهر، ستة أشهر (هذه عروض وليست باقات)
-   - لا تتجاهل أي باقة حتى لو كانت في فقرة مختلفة
+   - اذكر **كل باقة موجودة** مع اسمها وسعرها الدقيق
+   - عروض المنصة الترفيهية: شهر واحد، ثلاثة أشهر، ستة أشهر (هذه عروض وليست باقات)
    - انسخ الأسعار **حرفياً** من النص
    - **مهم**: المنصة هي "عروض" وليست "باقة" - استخدم "عروض المنصة" أو "باقات المنصة الترفيهية"
 
@@ -360,10 +364,13 @@ def filter_and_deduplicate_docs(docs, question: str = "") -> str:
                 continue
         
         if is_about_contact:
-            if any(kw in content_lower for kw in ["تواصل", "هاتف", "بريد", "واتساب", "6449", "info@"]):
+            # تحسين للتواصل - البحث عن جميع أشكال معلومات التواصل
+            if any(kw in content_lower for kw in ["تواصل", "هاتف", "بريد", "واتساب", "6449", "info@", 
+                                                   "shams-tele.com", "خدمة العملاء", "رقم", "اتصال",
+                                                   "معلومات التواصل"]):
                 exact_match.append(content)
                 continue
-            elif "دفع" in content_lower or "باقة" in content_lower:
+            elif "دفع" in content_lower or ("باقة" in content_lower and "تواصل" not in content_lower):
                 irrelevant.append(content)
                 continue
         
@@ -421,15 +428,28 @@ def filter_and_deduplicate_docs(docs, question: str = "") -> str:
     medium_priority = deduplicate(medium_priority)
     low_priority = deduplicate(low_priority)
     
-    # دمج مع الأولوية: exact_match أولاً، ثم high_priority، إلخ
-    all_docs = exact_match + high_priority + medium_priority + low_priority[:2]
+    # للأسئلة العامة عن الباقات، اجمع كل الباقات من جميع المصادر
+    is_general_packages = any(w in question_lower for w in ["جميع", "كل", "ما هي"]) and is_about_packages
+    
+    if is_general_packages:
+        # للأسئلة العامة، اجمع كل الباقات (فايبر ووايرلس)
+        all_packages = exact_match + high_priority
+        # إضافة المزيد من المستندات للأسئلة العامة
+        all_docs = all_packages + medium_priority + low_priority[:3]
+    else:
+        # دمج مع الأولوية: exact_match أولاً، ثم high_priority، إلخ
+        all_docs = exact_match + high_priority + medium_priority + low_priority[:2]
     
     if not all_docs:
         all_docs = [doc.page_content.strip() for doc in docs[:3] if doc.page_content.strip()]
     
     context = "\n---\n".join(all_docs)
-    # تقليل طول السياق لتحسين السرعة (1500 حرف كافٍ لمعظم الأسئلة)
-    return context[:1500]
+    
+    # تحديد طول السياق حسب نوع السؤال
+    is_general = any(w in question_lower for w in ["جميع", "كل", "ما هي", "ما أسعار", "ما الباقات", "قائمة"])
+    max_length = 2500 if is_general else 1500  # زيادة للأسئلة العامة
+    
+    return context[:max_length]
 
 
 def extract_text_from_message(message) -> str:
@@ -542,8 +562,14 @@ def expand_query(question: str, previous_question: str = None, previous_answer: 
     if any(w in q for w in ["اسم", "شركة", "من نحن", "عن الشركة", "شمس", "تيليكوم"]):
         return f"{original} شركة شمس تيليكوم معلومات الشركة من نحن تأسيس"
     
-    if any(w in q for w in ["خدمة", "خدمات", "ماذا", "ما هي"]):
-        return f"{original} خدمات الإنترنت FTTH WiFi مشاريع بلو سيركل"
+    # خدمات - تحسين
+    if any(w in q for w in ["خدمة", "خدمات", "ماذا", "ما هي", "تقدمون", "تقدم"]):
+        if "بلو سيركل" in q or "بلوسيركل" in q:
+            return f"{original} بلو سيركل حلول ألياف ضوئية شراكات"
+        elif "ألياف" in q or "فايبر" in q or "ftth" in q:
+            return f"{original} خدمات الإنترنت FTTH ألياف ضوئية كابل ضوئي"
+        else:
+            return f"{original} خدمات الإنترنت FTTH WiFi وايرلس مشاريع بلو سيركل"
     
     if any(w in q for w in ["شركاء", "شريك", "أصدقاء"]):
         return f"{original} شركاء أصدقاء تبادل اسوار تازة المنصة"
